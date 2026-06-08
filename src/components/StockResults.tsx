@@ -1,0 +1,67 @@
+import type { StockCheckResponse } from '../types'
+
+type StockResultsProps = {
+  result: StockCheckResponse
+  onBack: () => void
+  onNewSearch: () => void
+}
+
+export default function StockResults({ result, onBack, onNewSearch }: StockResultsProps) {
+  return (
+    <section className="results-screen" aria-label="Stock results">
+      <div className="results-header">
+        <button type="button" className="back-button" data-focusable onClick={onBack}>
+          ← Home
+        </button>
+        <button type="button" className="text-button" data-focusable onClick={onNewSearch}>
+          New Search
+        </button>
+      </div>
+
+      <article className="product-card glass-card">
+        {result.product_image && (
+          <img
+            className="product-image"
+            src={result.product_image}
+            alt={result.product_name}
+          />
+        )}
+        <h1>{result.product_name}</h1>
+        <p className="product-meta">{result.sku} · {result.zipcode}</p>
+        <a
+          className="product-link"
+          href={result.product_link}
+          target="_blank"
+          rel="noreferrer"
+          data-focusable
+        >
+          Product Link
+        </a>
+      </article>
+
+      <div className="store-list">
+        {result.stores.map((store) => (
+          <article className="store-card glass-card" key={`${store.store}-${store.address}`}>
+            <h2>{store.store}</h2>
+            <p className="store-address">{store.address}</p>
+            <p className="store-total">Est. Total: {store.estimated_total_stock}</p>
+
+            {store.last_sale && (
+              <p className="store-last-sale">
+                Last Sale: {'display' in store.last_sale ? store.last_sale.display : ''}
+              </p>
+            )}
+
+            <div className="stock-grid">
+              {store.stock_details.map((detail) => (
+                <div className="stock-line" key={`${store.store}-${detail.size}`}>
+                  {detail.display}
+                </div>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}

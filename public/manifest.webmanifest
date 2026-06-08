@@ -1,0 +1,10 @@
+{
+  "name": "Bypass Stock Checker",
+  "short_name": "Stock Checker",
+  "description": "Nike and Adidas instore stock checker for Meta Display glasses",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050a14",
+  "theme_color": "#050a14",
+  "orientation": "portrait"
+}

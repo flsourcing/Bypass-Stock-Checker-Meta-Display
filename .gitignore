@@ -4,9 +4,9 @@
 
 # Dependencies
 node_modules/
+dist/
 
 # Build output
-dist/
 build/
 .next/
 out/
