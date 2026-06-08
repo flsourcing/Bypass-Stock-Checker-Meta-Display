@@ -27,7 +27,53 @@ function getCenter(element: HTMLElement) {
   }
 }
 
-function moveFocusLinear(direction: Direction, focusables: HTMLElement[], currentIndex: number) {
+function scrollResults(direction: 'up' | 'down') {
+  const container = document.querySelector<HTMLElement>('.results-scroll')
+  if (!container) {
+    return false
+  }
+
+  const maxScroll = container.scrollHeight - container.clientHeight
+  if (maxScroll <= 0) {
+    return false
+  }
+
+  const step = Math.max(96, Math.round(container.clientHeight * 0.45))
+  const nextScroll =
+    direction === 'down'
+      ? Math.min(container.scrollTop + step, maxScroll)
+      : Math.max(container.scrollTop - step, 0)
+
+  if (nextScroll === container.scrollTop) {
+    return false
+  }
+
+  container.scrollTop = nextScroll
+  return true
+}
+
+function focusElement(element: HTMLElement) {
+  element.focus({ preventScroll: true })
+  element.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+
+  const scrollContainer = element.closest<HTMLElement>('.results-scroll')
+  if (scrollContainer) {
+    const containerRect = scrollContainer.getBoundingClientRect()
+    const elementRect = element.getBoundingClientRect()
+
+    if (elementRect.bottom > containerRect.bottom - 8) {
+      scrollContainer.scrollTop += elementRect.bottom - containerRect.bottom + 16
+    } else if (elementRect.top < containerRect.top + 8) {
+      scrollContainer.scrollTop -= containerRect.top - elementRect.top + 16
+    }
+  }
+}
+
+function moveFocusLinear(
+  direction: Direction,
+  focusables: HTMLElement[],
+  currentIndex: number,
+): HTMLElement | null {
   const nextIndex =
     direction === 'up' || direction === 'left'
       ? currentIndex > 0
@@ -37,10 +83,14 @@ function moveFocusLinear(direction: Direction, focusables: HTMLElement[], curren
         ? currentIndex + 1
         : 0
 
-  focusables[nextIndex]?.focus()
+  return focusables[nextIndex] ?? null
 }
 
-function moveFocusSpatial(direction: Direction, focusables: HTMLElement[], current: HTMLElement) {
+function moveFocusSpatial(
+  direction: Direction,
+  focusables: HTMLElement[],
+  current: HTMLElement,
+): HTMLElement | null {
   const currentCenter = getCenter(current)
   let bestElement: HTMLElement | null = null
   let bestScore = Infinity
@@ -85,35 +135,49 @@ function moveFocusSpatial(direction: Direction, focusables: HTMLElement[], curre
   }
 
   if (bestElement) {
-    bestElement.focus()
-    return
+    return bestElement
   }
 
   const currentIndex = focusables.indexOf(current)
   if (currentIndex !== -1) {
-    moveFocusLinear(direction, focusables, currentIndex)
+    return moveFocusLinear(direction, focusables, currentIndex)
   }
+
+  return null
 }
 
-function moveFocus(direction: Direction) {
+function moveFocus(direction: Direction): boolean {
   const focusables = getFocusables()
   if (focusables.length === 0) {
-    return
+    return false
   }
 
   const current = document.activeElement as HTMLElement
   const currentIndex = focusables.indexOf(current)
   if (currentIndex === -1) {
-    focusables[0].focus()
-    return
+    focusElement(focusables[0])
+    return true
   }
+
+  const onResults = Boolean(document.querySelector('.results-screen'))
+  let nextElement: HTMLElement | null = null
 
   if (current.closest('.keyboard-overlay')) {
-    moveFocusSpatial(direction, focusables, current)
-    return
+    nextElement = moveFocusSpatial(direction, focusables, current)
+  } else if (onResults) {
+    nextElement = moveFocusSpatial(direction, focusables, current)
+  } else {
+    nextElement =
+      moveFocusSpatial(direction, focusables, current) ??
+      moveFocusLinear(direction, focusables, currentIndex)
   }
 
-  moveFocusLinear(direction, focusables, currentIndex)
+  if (!nextElement || nextElement === current) {
+    return false
+  }
+
+  focusElement(nextElement)
+  return true
 }
 
 type UseDpadFocusOptions = {
@@ -128,10 +192,20 @@ export function useDpadFocus({ refocusKey, onBack }: UseDpadFocusOptions = {}) {
         '.keyboard-overlay .keyboard-key.focusable',
       )
       if (firstKeyboardKey) {
-        firstKeyboardKey.focus()
+        focusElement(firstKeyboardKey)
         return
       }
-      getFocusables()[0]?.focus()
+
+      const firstResult = document.querySelector<HTMLElement>('.results-scroll .focusable')
+      if (firstResult) {
+        focusElement(firstResult)
+        return
+      }
+
+      const first = getFocusables()[0]
+      if (first) {
+        focusElement(first)
+      }
     }, 150)
 
     return () => window.clearTimeout(timer)
@@ -141,13 +215,15 @@ export function useDpadFocus({ refocusKey, onBack }: UseDpadFocusOptions = {}) {
     function handleKeyDown(event: KeyboardEvent) {
       switch (event.key) {
         case DPAD.UP:
+        case DPAD.DOWN: {
           event.preventDefault()
-          moveFocus('up')
+          const direction = event.key === DPAD.UP ? 'up' : 'down'
+          const focusMoved = moveFocus(direction)
+          if (!focusMoved && document.querySelector('.results-screen')) {
+            scrollResults(direction)
+          }
           break
-        case DPAD.DOWN:
-          event.preventDefault()
-          moveFocus('down')
-          break
+        }
         case DPAD.LEFT:
           event.preventDefault()
           moveFocus('left')

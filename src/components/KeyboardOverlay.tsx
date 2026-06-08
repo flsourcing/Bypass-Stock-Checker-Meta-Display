@@ -1,5 +1,3 @@
-import { useRef, useState } from 'react'
-
 type KeyboardOverlayProps = {
   value: string
   label: string
@@ -14,39 +12,12 @@ const ROWS = [
   ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '-', '.'],
 ]
 
-type SpeechRecognitionLike = {
-  lang: string
-  interimResults: boolean
-  continuous: boolean
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null
-  onerror: ((event: { error?: string }) => void) | null
-  onend: (() => void) | null
-  start: () => void
-  stop: () => void
-}
-
-type SpeechRecognitionEventLike = {
-  results: ArrayLike<{ 0: { transcript: string } }>
-}
-
-function getSpeechRecognition() {
-  const win = window as Window & {
-    SpeechRecognition?: new () => SpeechRecognitionLike
-    webkitSpeechRecognition?: new () => SpeechRecognitionLike
-  }
-  return win.SpeechRecognition ?? win.webkitSpeechRecognition ?? null
-}
-
 export default function KeyboardOverlay({
   value,
   label,
   onChange,
   onClose,
 }: KeyboardOverlayProps) {
-  const [listening, setListening] = useState(false)
-  const [voiceHint, setVoiceHint] = useState('')
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-
   function appendKey(key: string) {
     onChange(value + key)
   }
@@ -55,44 +26,8 @@ export default function KeyboardOverlay({
     onChange(value.slice(0, -1))
   }
 
-  function startListening() {
-    const SpeechRecognitionCtor = getSpeechRecognition()
-    if (!SpeechRecognitionCtor) {
-      setVoiceHint('Voice input is not supported in this browser.')
-      return
-    }
-
-    recognitionRef.current?.stop()
-    const recognition = new SpeechRecognitionCtor()
-    recognition.lang = 'en-US'
-    recognition.interimResults = false
-    recognition.continuous = false
-    recognition.onresult = (event) => {
-      const transcript = event.results[0]?.[0]?.transcript ?? ''
-      const cleaned = transcript.replace(/\s+/g, '').toUpperCase()
-      if (cleaned) {
-        onChange(value + cleaned)
-      }
-      setVoiceHint('')
-    }
-    recognition.onerror = () => {
-      setVoiceHint('Could not capture voice. Try again.')
-      setListening(false)
-    }
-    recognition.onend = () => {
-      setListening(false)
-    }
-
-    recognitionRef.current = recognition
-    setListening(true)
-    setVoiceHint('Listening...')
-    recognition.start()
-  }
-
-  function stopListening() {
-    recognitionRef.current?.stop()
-    setListening(false)
-    setVoiceHint('')
+  function clearValue() {
+    onChange('')
   }
 
   return (
@@ -111,8 +46,6 @@ export default function KeyboardOverlay({
           Done
         </button>
       </div>
-
-      {voiceHint && <p className="voice-hint">{voiceHint}</p>}
 
       <div className="keyboard-rows">
         {ROWS.map((row) => (
@@ -143,11 +76,11 @@ export default function KeyboardOverlay({
           </button>
           <button
             type="button"
-            className={`keyboard-key keyboard-mic focusable ${listening ? 'listening' : ''}`}
-            onClick={listening ? stopListening : startListening}
-            aria-label={listening ? 'Stop microphone' : 'Start microphone'}
+            className="keyboard-key keyboard-clear focusable"
+            onClick={clearValue}
+            aria-label="Clear input"
           >
-            🎤
+            Clear
           </button>
         </div>
       </div>
