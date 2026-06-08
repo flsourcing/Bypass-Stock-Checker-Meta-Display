@@ -10,10 +10,10 @@ export default function StockResults({ result, onBack, onNewSearch }: StockResul
   return (
     <section className="results-screen" aria-label="Stock results">
       <div className="results-header">
-        <button type="button" className="back-button" data-focusable onClick={onBack}>
+        <button type="button" className="back-button focusable" onClick={onBack}>
           ← Home
         </button>
-        <button type="button" className="text-button" data-focusable onClick={onNewSearch}>
+        <button type="button" className="text-button focusable" onClick={onNewSearch}>
           New Search
         </button>
       </div>
@@ -29,11 +29,10 @@ export default function StockResults({ result, onBack, onNewSearch }: StockResul
         <h1>{result.product_name}</h1>
         <p className="product-meta">{result.sku} · {result.zipcode}</p>
         <a
-          className="product-link"
+          className="product-link focusable"
           href={result.product_link}
           target="_blank"
           rel="noreferrer"
-          data-focusable
         >
           Product Link
         </a>

@@ -13,8 +13,7 @@ export default function BrandCircle({ brand, label, onSelect }: BrandCircleProps
   return (
     <button
       type="button"
-      className={`brand-circle brand-circle-${brand}${focused ? ' focused' : ''}`}
-      data-focusable
+      className={`brand-circle brand-circle-${brand} focusable${focused ? ' focused' : ''}`}
       onClick={onSelect}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 type KeyboardOverlayProps = {
   value: string
@@ -46,12 +46,6 @@ export default function KeyboardOverlay({
   const [listening, setListening] = useState(false)
   const [voiceHint, setVoiceHint] = useState('')
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-
-  useEffect(() => {
-    return () => {
-      recognitionRef.current?.stop()
-    }
-  }, [])
 
   function appendKey(key: string) {
     onChange(value + key)
@@ -102,21 +96,18 @@ export default function KeyboardOverlay({
   }
 
   return (
-    <div className="keyboard-overlay" role="dialog" aria-label={`Keyboard for ${label}`}>
+    <div
+      className="keyboard-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Keyboard for ${label}`}
+    >
       <div className="keyboard-header">
         <span className="keyboard-label">{label}</span>
-        <input
-          className="keyboard-preview"
-          readOnly
-          value={value}
-          aria-label={label}
-        />
-        <button
-          type="button"
-          className="keyboard-done"
-          data-focusable
-          onClick={onClose}
-        >
+        <div className="keyboard-preview" aria-label={label}>
+          {value || ' '}
+        </div>
+        <button type="button" className="keyboard-done focusable" onClick={onClose}>
           Done
         </button>
       </div>
@@ -130,8 +121,7 @@ export default function KeyboardOverlay({
               <button
                 key={key}
                 type="button"
-                className="keyboard-key"
-                data-focusable
+                className="keyboard-key focusable"
                 onClick={() => appendKey(key)}
               >
                 {key}
@@ -143,24 +133,17 @@ export default function KeyboardOverlay({
         <div className="keyboard-row keyboard-actions">
           <button
             type="button"
-            className="keyboard-key keyboard-key-wide"
-            data-focusable
+            className="keyboard-key keyboard-key-wide focusable"
             onClick={() => appendKey(' ')}
           >
             Space
           </button>
-          <button
-            type="button"
-            className="keyboard-key"
-            data-focusable
-            onClick={backspace}
-          >
+          <button type="button" className="keyboard-key focusable" onClick={backspace}>
             ⌫
           </button>
           <button
             type="button"
-            className={`keyboard-key keyboard-mic ${listening ? 'listening' : ''}`}
-            data-focusable
+            className={`keyboard-key keyboard-mic focusable ${listening ? 'listening' : ''}`}
             onClick={listening ? stopListening : startListening}
             aria-label={listening ? 'Stop microphone' : 'Start microphone'}
           >
