@@ -6,4 +6,8 @@ export default defineConfig({
     ? '/Bypass-Stock-Checker-Meta-Display/'
     : '/',
   plugins: [react()],
+  build: {
+    target: ['es2020', 'chrome80', 'safari14'],
+    cssTarget: 'chrome80',
+  },
 })

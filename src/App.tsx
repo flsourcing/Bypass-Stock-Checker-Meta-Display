@@ -18,8 +18,12 @@ function App() {
   const [result, setResult] = useState<StockCheckResponse | null>(null)
 
   useEffect(() => {
-    const firstFocusable = document.querySelector<HTMLElement>('[data-focusable]')
-    firstFocusable?.focus()
+    const timer = window.setTimeout(() => {
+      const firstFocusable = document.querySelector<HTMLElement>('[data-focusable]')
+      firstFocusable?.focus()
+    }, 150)
+
+    return () => window.clearTimeout(timer)
   }, [screen, activeField])
 
   useEffect(() => {

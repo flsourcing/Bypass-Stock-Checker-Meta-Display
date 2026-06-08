@@ -1,13 +1,16 @@
 .app-shell {
-  width: 100vw;
-  height: 100svh;
+  width: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--bg);
 }
 
 .app-shell.keyboard-open {
@@ -17,8 +20,9 @@
 .home-screen,
 .form-screen,
 .results-screen {
-  width: min(720px, 100%);
-  height: 100%;
+  width: 100%;
+  max-width: 720px;
+  min-height: min(100%, 480px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,17 +38,17 @@
   padding-bottom: 40px;
 }
 
+h1 {
+  color: #ffffff;
+  font-size: 36px;
+  letter-spacing: -0.04em;
+}
+
 .eyebrow {
-  color: rgba(255, 255, 255, 0.58);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 14px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-}
-
-h1 {
-  color: var(--text-h);
-  font-size: clamp(28px, 6vw, 40px);
-  letter-spacing: -0.04em;
 }
 
 .brand-row {
@@ -56,25 +60,30 @@ h1 {
 }
 
 .brand-circle {
-  width: min(34vw, 180px);
-  height: min(34vw, 180px);
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.18);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
-    rgba(10, 16, 28, 0.72);
+  border: 3px solid rgba(255, 255, 255, 0.28);
+  background: rgba(18, 26, 42, 0.96);
   box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 12px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   padding: 0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .brand-circle-nike {
-  border-color: rgba(255, 107, 53, 0.45);
+  border-color: rgba(255, 107, 53, 0.85);
+  box-shadow:
+    0 0 0 4px rgba(255, 107, 53, 0.18),
+    0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 .brand-circle-adidas {
-  border-color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.1),
+    0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 .brand-circle-inner {
@@ -87,32 +96,68 @@ h1 {
 }
 
 .brand-circle-text {
-  color: var(--text-h);
-  font-size: clamp(22px, 5vw, 30px);
+  color: #ffffff;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.03em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .brand-circle:focus-visible,
-.brand-circle:hover,
+.brand-circle.focused {
+  outline: none;
+  border-color: rgba(98, 210, 255, 0.95);
+  box-shadow:
+    0 0 0 6px rgba(98, 210, 255, 0.28),
+    0 16px 36px rgba(0, 0, 0, 0.32);
+  transform: scale(1.04);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .brand-circle:hover {
+    outline: none;
+    border-color: rgba(98, 210, 255, 0.95);
+    box-shadow:
+      0 0 0 6px rgba(98, 210, 255, 0.28),
+      0 16px 36px rgba(0, 0, 0, 0.32);
+    transform: scale(1.04);
+  }
+}
+
 .back-button:focus-visible,
-.back-button:hover,
+.back-button.focused,
 .input-display:focus-visible,
-.input-display:hover,
+.input-display.focused,
 .primary-button:focus-visible,
-.primary-button:hover,
+.primary-button.focused,
 .text-button:focus-visible,
-.text-button:hover,
+.text-button.focused,
 .keyboard-key:focus-visible,
-.keyboard-key:hover,
+.keyboard-key.focused,
 .keyboard-done:focus-visible,
-.keyboard-done:hover {
+.keyboard-done.focused {
   outline: none;
   border-color: rgba(98, 210, 255, 0.9);
   box-shadow:
     0 0 0 5px rgba(98, 210, 255, 0.18),
     0 16px 36px rgba(0, 0, 0, 0.28);
   transform: scale(1.03);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back-button:hover,
+  .input-display:hover,
+  .primary-button:hover,
+  .text-button:hover,
+  .keyboard-key:hover,
+  .keyboard-done:hover {
+    outline: none;
+    border-color: rgba(98, 210, 255, 0.9);
+    box-shadow:
+      0 0 0 5px rgba(98, 210, 255, 0.18),
+      0 16px 36px rgba(0, 0, 0, 0.28);
+    transform: scale(1.03);
+  }
 }
 
 .back-button,
@@ -278,9 +323,8 @@ h1 {
   bottom: 0;
   z-index: 20;
   padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-  background: rgba(4, 8, 16, 0.96);
+  background: rgba(4, 8, 16, 0.98);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(16px);
 }
 
 .keyboard-header {

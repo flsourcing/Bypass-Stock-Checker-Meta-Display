@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Brand } from '../types'
 
 type BrandCircleProps = {
@@ -7,12 +8,16 @@ type BrandCircleProps = {
 }
 
 export default function BrandCircle({ brand, label, onSelect }: BrandCircleProps) {
+  const [focused, setFocused] = useState(false)
+
   return (
     <button
       type="button"
-      className={`brand-circle brand-circle-${brand}`}
+      className={`brand-circle brand-circle-${brand}${focused ? ' focused' : ''}`}
       data-focusable
       onClick={onSelect}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       aria-label={`Check ${label} stock`}
     >
       <span className="brand-circle-inner">
