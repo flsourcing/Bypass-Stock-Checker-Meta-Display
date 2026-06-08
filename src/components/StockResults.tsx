@@ -16,6 +16,13 @@ export default function StockResults({ result, onBack, onNewSearch }: StockResul
     setActiveStore(0)
   }, [result.sku, result.zipcode])
 
+  useEffect(() => {
+    const grid = document.querySelector<HTMLElement>('.results-store-panel .stock-grid')
+    if (grid) {
+      grid.scrollTop = 0
+    }
+  }, [activeStore])
+
   function showPreviousStore() {
     setActiveStore((index) => Math.max(0, index - 1))
   }
@@ -35,42 +42,37 @@ export default function StockResults({ result, onBack, onNewSearch }: StockResul
         </button>
       </div>
 
-      <article className="product-card glass-card results-product-summary">
-        {result.product_image && (
-          <img
-            className="product-image"
-            src={result.product_image}
-            alt={result.product_name}
-          />
-        )}
-        <div className="product-summary-copy">
-          <h1>{result.product_name}</h1>
-          <p className="product-meta">{result.sku} · {result.zipcode}</p>
-          <a
-            className="product-link focusable"
-            href={result.product_link}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Product Link
-          </a>
-        </div>
-      </article>
-
       {store && (
         <article className="store-card glass-card results-store-panel" aria-live="polite">
-          <p className="store-index">
-            Store {activeStore + 1} of {storeCount}
-          </p>
-          <h2>{store.store}</h2>
-          <p className="store-address">{store.address}</p>
-          <p className="store-total">Est. Total: {store.estimated_total_stock}</p>
+          <div className="store-card-top">
+            <div className="store-product-head">
+              <p className="store-product-title">
+                {result.product_name} - {result.sku}
+              </p>
+              <p className="store-index">
+                Store {activeStore + 1} of {storeCount}
+              </p>
+            </div>
+            {result.product_image && (
+              <img
+                className="store-product-thumb"
+                src={result.product_image}
+                alt={result.product_name}
+              />
+            )}
+          </div>
 
-          {store.last_sale && (
-            <p className="store-last-sale">
-              Last Sale: {'display' in store.last_sale ? store.last_sale.display : ''}
-            </p>
-          )}
+          <h2 className="store-name">{store.store}</h2>
+          <p className="store-address">{store.address}</p>
+
+          <div className="store-stats">
+            <p className="store-total">Est. Total: {store.estimated_total_stock}</p>
+            {store.last_sale && (
+              <p className="store-last-sale">
+                Last Sale: {'display' in store.last_sale ? store.last_sale.display : ''}
+              </p>
+            )}
+          </div>
 
           <div className="stock-grid">
             {store.stock_details.map((detail) => (
@@ -90,7 +92,7 @@ export default function StockResults({ result, onBack, onNewSearch }: StockResul
           disabled={activeStore === 0}
           onClick={showPreviousStore}
         >
-          ↑ Prev Store
+          ↑ Prev
         </button>
         <span className="pager-label">
           {activeStore + 1} / {storeCount}
@@ -102,7 +104,7 @@ export default function StockResults({ result, onBack, onNewSearch }: StockResul
           disabled={activeStore >= storeCount - 1}
           onClick={showNextStore}
         >
-          ↓ Next Store
+          ↓ Next
         </button>
       </div>
     </section>

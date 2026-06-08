@@ -146,6 +146,46 @@ function moveFocus(direction: Direction): boolean {
   return true
 }
 
+function scrollStockGrid(direction: 'up' | 'down') {
+  const grid = document.querySelector<HTMLElement>('.results-store-panel .stock-grid')
+  if (!grid) {
+    return false
+  }
+
+  const maxScroll = grid.scrollHeight - grid.clientHeight
+  if (maxScroll <= 0) {
+    return false
+  }
+
+  const step = Math.max(40, Math.round(grid.clientHeight * 0.55))
+  const nextScroll =
+    direction === 'down'
+      ? Math.min(grid.scrollTop + step, maxScroll)
+      : Math.max(grid.scrollTop - step, 0)
+
+  if (nextScroll === grid.scrollTop) {
+    return false
+  }
+
+  grid.scrollTop = nextScroll
+  return true
+}
+
+function handleResultsVertical(direction: 'up' | 'down') {
+  if (direction === 'down') {
+    if (scrollStockGrid('down')) {
+      return
+    }
+    paginateResults('down')
+    return
+  }
+
+  if (scrollStockGrid('up')) {
+    return
+  }
+  paginateResults('up')
+}
+
 function paginateResults(direction: 'up' | 'down') {
   const target = direction === 'down' ? 'next' : 'prev'
   const button = document.querySelector<HTMLButtonElement>(
@@ -199,7 +239,7 @@ export function useDpadFocus({ refocusKey, onBack }: UseDpadFocusOptions = {}) {
           const onResults = Boolean(document.querySelector('.results-screen'))
 
           if (onResults) {
-            paginateResults(direction)
+            handleResultsVertical(direction)
             break
           }
 
