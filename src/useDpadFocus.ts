@@ -27,46 +27,8 @@ function getCenter(element: HTMLElement) {
   }
 }
 
-function scrollResults(direction: 'up' | 'down') {
-  const container = document.querySelector<HTMLElement>('.results-scroll')
-  if (!container) {
-    return false
-  }
-
-  const maxScroll = container.scrollHeight - container.clientHeight
-  if (maxScroll <= 0) {
-    return false
-  }
-
-  const step = Math.max(96, Math.round(container.clientHeight * 0.45))
-  const nextScroll =
-    direction === 'down'
-      ? Math.min(container.scrollTop + step, maxScroll)
-      : Math.max(container.scrollTop - step, 0)
-
-  if (nextScroll === container.scrollTop) {
-    return false
-  }
-
-  container.scrollTop = nextScroll
-  return true
-}
-
 function focusElement(element: HTMLElement) {
   element.focus({ preventScroll: true })
-  element.scrollIntoView({ block: 'nearest', behavior: 'auto' })
-
-  const scrollContainer = element.closest<HTMLElement>('.results-scroll')
-  if (scrollContainer) {
-    const containerRect = scrollContainer.getBoundingClientRect()
-    const elementRect = element.getBoundingClientRect()
-
-    if (elementRect.bottom > containerRect.bottom - 8) {
-      scrollContainer.scrollTop += elementRect.bottom - containerRect.bottom + 16
-    } else if (elementRect.top < containerRect.top + 8) {
-      scrollContainer.scrollTop -= containerRect.top - elementRect.top + 16
-    }
-  }
 }
 
 function moveFocusLinear(
@@ -165,7 +127,11 @@ function moveFocus(direction: Direction): boolean {
   if (current.closest('.keyboard-overlay')) {
     nextElement = moveFocusSpatial(direction, focusables, current)
   } else if (onResults) {
-    nextElement = moveFocusSpatial(direction, focusables, current)
+    if (direction === 'left' || direction === 'right') {
+      nextElement = moveFocusSpatial(direction, focusables, current)
+    } else {
+      return false
+    }
   } else {
     nextElement =
       moveFocusSpatial(direction, focusables, current) ??
@@ -177,6 +143,18 @@ function moveFocus(direction: Direction): boolean {
   }
 
   focusElement(nextElement)
+  return true
+}
+
+function paginateResults(direction: 'up' | 'down') {
+  const target = direction === 'down' ? 'next' : 'prev'
+  const button = document.querySelector<HTMLButtonElement>(
+    `.results-pager [data-pager="${target}"]:not([disabled])`,
+  )
+  if (!button) {
+    return false
+  }
+  button.click()
   return true
 }
 
@@ -196,7 +174,7 @@ export function useDpadFocus({ refocusKey, onBack }: UseDpadFocusOptions = {}) {
         return
       }
 
-      const firstResult = document.querySelector<HTMLElement>('.results-scroll .focusable')
+      const firstResult = document.querySelector<HTMLElement>('.results-header .focusable')
       if (firstResult) {
         focusElement(firstResult)
         return
@@ -218,10 +196,14 @@ export function useDpadFocus({ refocusKey, onBack }: UseDpadFocusOptions = {}) {
         case DPAD.DOWN: {
           event.preventDefault()
           const direction = event.key === DPAD.UP ? 'up' : 'down'
-          const focusMoved = moveFocus(direction)
-          if (!focusMoved && document.querySelector('.results-screen')) {
-            scrollResults(direction)
+          const onResults = Boolean(document.querySelector('.results-screen'))
+
+          if (onResults) {
+            paginateResults(direction)
+            break
           }
+
+          moveFocus(direction)
           break
         }
         case DPAD.LEFT:
